@@ -1,8 +1,10 @@
 package io.pivotal.pal.trackerapi;
 
 import com.jayway.jsonpath.DocumentContext;
+import com.mysql.cj.jdbc.MysqlDataSource;
 import io.pivotal.pal.tracker.PalTrackerApplication;
 import io.pivotal.pal.tracker.TimeEntry;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +14,12 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.TimeZone;
 
 import static com.jayway.jsonpath.JsonPath.parse;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,8 +36,19 @@ public class TimeEntryApiTest {
     private final long userId = 456L;
     private TimeEntry timeEntry = new TimeEntry(projectId, userId, LocalDate.parse("2017-01-08"), 8);
 
+    @Before
+    public void setUp() {
+        MysqlDataSource dataSource = new MysqlDataSource();
+        dataSource.setUrl(System.getenv("SPRING_DATASOURCE_URL"));
+
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        jdbcTemplate.execute("TRUNCATE time_entries");
+
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+    }
+
     @Test
-    public void testCreate() throws Exception {
+    public void testCreate() {
         ResponseEntity<String> createResponse = restTemplate.postForEntity("/time-entries", timeEntry, String.class);
 
 
@@ -48,7 +63,7 @@ public class TimeEntryApiTest {
     }
 
     @Test
-    public void testList() throws Exception {
+    public void testList() {
         Long id = createTimeEntry();
 
 
@@ -67,7 +82,7 @@ public class TimeEntryApiTest {
     }
 
     @Test
-    public void testRead() throws Exception {
+    public void testRead() {
         Long id = createTimeEntry();
 
 
@@ -84,7 +99,7 @@ public class TimeEntryApiTest {
     }
 
     @Test
-    public void testUpdate() throws Exception {
+    public void testUpdate() {
         Long id = createTimeEntry();
         long projectId = 2L;
         long userId = 3L;
@@ -105,7 +120,7 @@ public class TimeEntryApiTest {
     }
 
     @Test
-    public void testDelete() throws Exception {
+    public void testDelete() {
         Long id = createTimeEntry();
 
 

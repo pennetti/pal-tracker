@@ -1,8 +1,5 @@
 package io.pivotal.pal.tracker;
 
-import io.pivotal.pal.tracker.TimeEntry;
-
-import java.sql.Time;
 import java.util.List;
 
 public interface TimeEntryRepository {
